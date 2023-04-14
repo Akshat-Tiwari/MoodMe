@@ -1,6 +1,10 @@
-from flask import Flask, render_template, request
-import cv2
+from flask import Flask, request, render_template
+import tensorflow as tf
 import numpy as np
+from PIL import Image
+
+# Load the saved model
+model = tf.keras.models.load_model('emotion_recognition_model.h5')
 
 app = Flask(__name__)
 
@@ -10,30 +14,21 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    # Get the file from the request
     file = request.files['image']
-    img = np.fromstring(file.read(), np.uint8)
-    img = cv2.imdecode(img, cv2.IMREAD_COLOR)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-    emotions = ["Angry", "Disgust", "Fear", "Happy", "Neutral", "Sad", "Surprise"]
 
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
+    # Read the image and preprocess it
+    img = Image.open(file).convert('L').resize((48, 48))
+    img_arr = np.array(img) / 255.0
+    img_arr = img_arr.reshape((1, 48, 48, 1))
 
-    for (x, y, w, h) in faces:
-        roi_gray = gray[y:y+h, x:x+w]
-        roi_color = img[y:y+h, x:x+w]
+    # Predict the emotion using the loaded model
+    emotion = model.predict(img_arr)[0]
+    emotion_label = np.argmax(emotion)
 
-    # add emotion recognition code here
-
-        emotion = emotions[result[0]]
-   
-    # add emotion recognition code here
-
-    return f"The predicted emotion is {emotion}"
+    # Return the emotion as a string
+    emotions = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+    return emotions[emotion_label]
 
 if __name__ == '__main__':
-    app.run(debug=True) 
-
-    #added comment
-    #added comment2
-    
+    app.run(debug=True)
