@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emotion Detection Result</title>
+</head>
+<body>
+    <h1>Emotion Detection Result</h1>
+    <p>Predicted Emotion: {{ label }}</p>
+    <p>Probabilities:</p>
+    <ul>
+        {% for p in probabilities %}
+        <li>{{ EMOTIONS[loop.index0] }}: {{ '%.2f' % p }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
